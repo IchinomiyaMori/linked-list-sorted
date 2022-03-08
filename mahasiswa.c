@@ -36,14 +36,14 @@ void showlist(struct mahasiswa *head) {
   }
 }
 
-// mergesort list
+// mergesort list by nim ascending
 void mergesort(struct mahasiswa **head, struct mahasiswa **tail) {
   // if list is empty or has only one element
   if (*head == NULL || (*head)->next == NULL) {
     return;
   }
 
-  // split list into two
+  // split list into two sublists
   struct mahasiswa *mid = *head;
   struct mahasiswa *mid_next = mid->next;
   while (mid_next != NULL) {
@@ -54,43 +54,37 @@ void mergesort(struct mahasiswa **head, struct mahasiswa **tail) {
     }
   }
 
-  // split list into two
-  struct mahasiswa *mid_prev = mid->prev;
-  mid_prev->next = NULL;
-  mid->prev = NULL;
+  // recursively sort each sublist
+  mergesort(head, &mid->prev);
+  mergesort(&mid->next, tail);
 
-  // sort each list
-  mergesort(head, &mid_prev);
-  mergesort(&mid, tail);
-
-  // merge two sorted list
-  struct mahasiswa *sorted = NULL;
-  struct mahasiswa *sorted_tail = NULL;
-  while (*head != NULL && mid != NULL) {
-    if ((*head)->nilai_a < mid->nilai_a) {
-      push(&sorted, &sorted_tail, *head);
-      *head = (*head)->next;
+  // merge the two sorted sublists
+  struct mahasiswa *p1 = *head;
+  struct mahasiswa *p2 = mid->next;
+  struct mahasiswa *tmp;
+  while (p1 != mid && p2 != NULL) {
+    if (p1->nim <= p2->nim) {
+      tmp = p1;
+      p1 = p1->next;
     } else {
-      push(&sorted, &sorted_tail, mid);
-      mid = mid->next;
+      tmp = p2;
+      p2 = p2->next;
     }
+    tmp->prev = tmp->next = NULL;
+    push(head, tail, tmp);
   }
-
-  // if there is still element in the first list
-  while (*head != NULL) {
-    push(&sorted, &sorted_tail, *head);
-    *head = (*head)->next;
+  while (p1 != mid) {
+    tmp = p1;
+    p1 = p1->next;
+    tmp->prev = tmp->next = NULL;
+    push(head, tail, tmp);
   }
-
-  // if there is still element in the second list
-  while (mid != NULL) {
-    push(&sorted, &sorted_tail, mid);
-    mid = mid->next;
+  while (p2 != NULL) {
+    tmp = p2;
+    p2 = p2->next;
+    tmp->prev = tmp->next = NULL;
+    push(head, tail, tmp);
   }
-
-  // update head and tail
-  *head = sorted;
-  *tail = sorted_tail;
 }
 
 int main() {
